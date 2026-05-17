@@ -8,7 +8,24 @@ out/
 # Gradle
 .gradle/
 build/
+gradle/wrapper/gradle-wrapper.jar
 
-# Arquivos de build
+# Compiled output
 *.class
 *.tmp
+
+# JAR artifacts
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# RuneLite dev credentials (never commit)
+jagex_cl_oldschool_LIVE.dat
