@@ -14,7 +14,7 @@ repositories {
 }
 
 def runeLiteVersion = 'latest.release'
-def pluginMainClass = 'com.example.ExamplePluginTest'
+def pluginMainClass = 'com.osrstracker.OsrsTrackerPluginTest'
 
 dependencies {
 	compileOnly group: 'net.runelite', name:'client', version: runeLiteVersion
@@ -27,7 +27,7 @@ dependencies {
 	testImplementation group: 'net.runelite', name:'jshell', version: runeLiteVersion
 }
 
-group = 'com.example'
+group = 'com.osrstracker'
 
 tasks.withType(JavaCompile).configureEach {
 	options.encoding = 'UTF-8'
@@ -38,24 +38,22 @@ tasks.register('run', JavaExec) {
 	classpath = sourceSets.test.runtimeClasspath
 	mainClass = pluginMainClass
 
-	jvmArgs "-ea"
+	jvmArgs "-ea", "-Drunelite.launcher.version=2.7.7"
 	args "--developer-mode", "--debug"
 }
 
 tasks.register('shadowJar', Jar) {
-	dependsOn configurations.testRuntimeClasspath
 	manifest {
-		attributes('Main-Class': pluginMainClass, 'Multi-Release': true)
+		attributes('Multi-Release': true)
 	}
 
+	// Only bundle the plugin's own compiled classes + resources.
+	// RuneLite (client, guice, okhttp, gson, etc.) is compileOnly and
+	// will be provided at runtime by the host RuneLite process.
+	// Bundling testRuntimeClasspath caused com.apple.eawt.* (macOS-only
+	// RuneLite classes) to be scanned by PluginManager on Linux → crash.
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	from sourceSets.main.output
-	from sourceSets.test.output
-	from {
-		configurations.testRuntimeClasspath.collect { file ->
-			file.isDirectory() ? file : zipTree(file)
-		}
-	}
 
 	exclude 'META-INF/INDEX.LIST'
 	exclude 'META-INF/*.SF'

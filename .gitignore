@@ -1,9 +1,14 @@
-.gradle
-build
+# IntelliJ IDEA
 .idea/
-.project
-.settings/
-.classpath
-nbactions.xml
-nb-configuration.xml
-nbproject/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Gradle
+.gradle/
+build/
+
+# Arquivos de build
+*.class
+*.tmp
