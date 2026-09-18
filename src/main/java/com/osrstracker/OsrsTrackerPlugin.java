@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -51,10 +50,12 @@ public class OsrsTrackerPlugin extends Plugin
 	@Inject
 	private ApiClient apiClient;
 
+	@Inject
+	private ScheduledExecutorService executor;
+
 	private OsrsTrackerPanel panel;
 	private NavigationButton navButton;
 
-	private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 	private ScheduledFuture<?> syncTask;
 
 	// Escritos no client thread via eventos, lidos no executor thread em sendSnapshot.
@@ -89,12 +90,7 @@ public class OsrsTrackerPlugin extends Plugin
 	@Override
 	protected void shutDown()
 	{
-		if (syncTask != null)
-		{
-			syncTask.cancel(false);
-			syncTask = null;
-		}
-		executor.shutdownNow();
+		cancelSyncTask();
 		clientToolbar.removeNavigation(navButton);
 		panel = null;
 
@@ -197,9 +193,8 @@ public class OsrsTrackerPlugin extends Plugin
 			return;
 		}
 
-		String username = cachedUsername;
 		String accountType = cachedAccountType;
-		if (username == null || accountType == null)
+		if (cachedUsername == null || accountType == null)
 		{
 			return;
 		}
@@ -231,7 +226,7 @@ public class OsrsTrackerPlugin extends Plugin
 		skills.put("total_level", (long) totalLevel);
 		skills.put("total_xp", totalXp);
 
-		SkillSnapshot snapshot = new SkillSnapshot(username, accountType, skills);
+		SkillSnapshot snapshot = new SkillSnapshot(accountType, skills);
 
 		apiClient.sendSnapshot(snapshot, new okhttp3.Callback()
 		{
